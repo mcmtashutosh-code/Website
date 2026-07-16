@@ -1,4 +1,114 @@
-<!DOCTYPE html>
+ransform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:11.5px; font-weight:700; color:var(--teal); padding:4px 6px;}
+
+  /* ===== TAB SECTIONS (Home/Notes/Test/Jobs/About) ===== */
+  .tab-section{display:none;}
+  .tab-section.active{display:block;}
+  section{padding:64px 0;}
+  .section-head{margin-bottom:32px; max-width:640px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--teal); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:10px; display:block;}
+  .section-head h2{font-size:30px; color:var(--navy);}
+  .section-head p{margin-top:10px; color:var(--ink-70); font-size:15.5px; line-height:1.6;}
+
+  /* HERO */
+  .hero{padding:56px 0 40px !important;}
+  .hero-grid{display:grid; grid-template-columns:1.1fr 0.9fr; gap:56px; align-items:center;}
+  .hero h1{font-size:clamp(34px,4.2vw,52px); line-height:1.12; color:var(--navy); font-weight:700;}
+  .hero h1 .accent{color:var(--marigold); font-style:italic; font-weight:600;}
+  .hero p.sub{margin-top:20px; font-size:17px; line-height:1.6; color:var(--ink-70); max-width:480px;}
+  .hero-actions{display:flex; gap:14px; margin-top:32px; flex-wrap:wrap;}
+  .btn-primary{background:var(--marigold); color:var(--navy); padding:13px 26px; border-radius:10px; font-weight:700; font-size:15px; box-shadow:3px 3px 0 var(--navy); transition:transform .12s; border:none;}
+  .btn-primary:hover{transform:translate(-2px,-2px); box-shadow:5px 5px 0 var(--navy);}
+  .btn-ghost{padding:13px 22px; border-radius:10px; font-weight:600; font-size:15px; border:1.5px solid var(--navy); color:var(--navy);}
+
+  .register{background:var(--card); border-radius:var(--radius); padding:26px 26px 22px; box-shadow:0 1px 0 var(--paper-line), 0 20px 40px -24px rgba(22,35,63,0.35); position:relative; border:1px solid var(--paper-line);}
+  .register::before{content:""; position:absolute; inset:8px; border:1px dashed rgba(22,35,63,0.15); border-radius:10px; pointer-events:none;}
+  .register-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:1.5px solid var(--navy); padding-bottom:10px; margin-bottom:6px;}
+  .register-head h3{font-size:16px; color:var(--navy);}
+  .register-head span{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-50);}
+  .reg-row{display:flex; justify-content:space-between; align-items:center; padding:13px 2px; border-bottom:1px dashed var(--paper-line); font-size:14.5px;}
+  .reg-row:last-of-type{border-bottom:none;}
+  .reg-row .label{color:var(--ink-70); font-weight:500;}
+  .reg-row .count{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:15px;}
+  .c-notes{color:#4B5A3C;} .c-test{color:#8A5A17;} .c-jobs{color:#20674A;}
+  .stamp{position:absolute; right:20px; bottom:18px; width:78px; height:78px; border:2.5px solid var(--coral); border-radius:50%; display:flex; align-items:center; justify-content:center; text-align:center; transform:rotate(-14deg); color:var(--coral); font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700; line-height:1.25; letter-spacing:0.03em; opacity:0.85;}
+
+  .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  .feature-card{background:var(--card); border-radius:var(--radius); padding:24px; border-top:4px solid var(--navy); border:1px solid var(--paper-line); box-shadow:0 12px 24px -20px rgba(22,35,63,0.4);}
+  .feature-card.notes{border-top-color:#6C7D57;}
+  .feature-card.test{border-top-color:var(--marigold);}
+  .feature-card.jobs{border-top-color:var(--teal);}
+  .feature-card .tag{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-50); text-transform:uppercase;}
+  .feature-card h3{font-size:20px; margin-top:8px; color:var(--navy);}
+  .feature-card p{margin-top:10px; font-size:14.5px; color:var(--ink-70); line-height:1.55;}
+  .feature-card .stub-list{margin-top:16px; display:flex; flex-direction:column; gap:8px;}
+  .stub-item{display:flex; justify-content:space-between; font-size:13.5px; padding:10px 12px; background:var(--paper); border-radius:8px; color:var(--ink-70);}
+  .stub-item .badge{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-50);}
+
+  .about-strip{background:var(--navy); color:#EEF2F0; border-radius:20px; padding:48px 40px; display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center;}
+  .about-strip h2{color:#fff; font-size:26px;}
+  .about-strip p{margin-top:14px; font-size:15px; line-height:1.65; color:rgba(238,242,240,0.75);}
+  .about-stats{display:flex; gap:28px; flex-wrap:wrap;}
+  .about-stats div{font-family:'IBM Plex Mono',monospace;}
+  .about-stats .num{font-size:26px; font-weight:600; color:var(--marigold);}
+  .about-stats .lbl{font-size:11.5px; color:rgba(238,242,240,0.6); text-transform:uppercase; margin-top:4px;}
+
+  footer{padding:36px 0 48px; border-top:1px solid var(--paper-line); margin-top:20px;}
+  .footer-row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
+  .footer-row .mono{font-size:12px; color:var(--ink-50);}
+
+  /* ===== NOTES (student) ===== */
+  .cat-toggle{display:flex; gap:10px; margin:8px 0 28px; flex-wrap:wrap;}
+  .cat-toggle button{padding:10px 20px; border-radius:12px; font-weight:700; font-size:14px; border:1.5px solid var(--paper-line); background:var(--card); color:var(--ink-70);}
+  .cat-toggle button.active.academic{background:#DCE7FF; border-color:#28407A; color:#28407A;}
+  .cat-toggle button.active.competitive{background:#FBE7C9; border-color:#8A5A17; color:#8A5A17;}
+  .cat-toggle button.active.gov{background:var(--gov-bg); border-color:var(--gov); color:var(--gov);}
+  .cat-toggle button.active.pvt{background:var(--pvt-bg); border-color:var(--pvt); color:var(--pvt);}
+  .cat-toggle .count{font-family:'IBM Plex Mono',monospace; font-size:11px; opacity:0.7; margin-left:4px;}
+
+  .note-card{background:var(--card); border-radius:var(--radius); padding:22px; border:1px solid var(--paper-line); border-top:4px solid var(--marigold); box-shadow:0 12px 24px -20px rgba(22,35,63,0.4); display:flex; flex-direction:column; gap:10px;}
+  .note-card.mode-only{border-top-color:var(--teal);}
+  .note-card .tags{display:flex; gap:6px; flex-wrap:wrap;}
+  .badge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; padding:4px 8px; border-radius:6px; text-transform:uppercase;}
+  .badge.access-dl{background:#FBE7C9; color:#8A5A17;}
+  .badge.access-only{background:#DDEFE4; color:#20674A;}
+  .badge.cat{background:var(--paper); color:var(--ink-50); border:1px solid var(--paper-line);}
+  .note-card h3{font-size:18px;}
+  .note-card .sub{font-size:13px; color:var(--ink-50);}
+  .note-card .filename{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-50); margin-top:4px;}
+  .note-card .actions{margin-top:auto; padding-top:10px;}
+  .btn-primary-full{background:var(--marigold); color:var(--navy); padding:10px 18px; border-radius:8px; font-weight:700; font-size:13.5px; border:none; box-shadow:2px 2px 0 var(--navy); width:100%;}
+  .btn-teal-full{background:var(--teal); color:#fff; padding:10px 18px; border-radius:8px; font-weight:700; font-size:13.5px; border:none; box-shadow:2px 2px 0 var(--navy); width:100%;}
+  .empty-state{grid-column:1/-1; text-align:center; padding:48px 20px; border:1.5px dashed var(--paper-line); border-radius:var(--radius); color:var(--ink-50); font-size:14px;}
+
+  /* ===== JOBS (student) ===== */
+  .sub-toggle{display:flex; gap:8px; margin-bottom:28px; flex-wrap:wrap;}
+  .sub-toggle button{padding:8px 16px; border-radius:999px; font-weight:600; font-size:13px; border:1.5px solid var(--paper-line); background:transparent; color:var(--ink-50);}
+  .sub-toggle button.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+  .job-card{background:var(--card); border-radius:var(--radius); padding:22px; border:1px solid var(--paper-line); border-top:4px solid var(--gov); box-shadow:0 12px 24px -20px rgba(22,35,63,0.4); display:flex; flex-direction:column; gap:8px;}
+  .job-card.pvt-card{border-top-color:var(--pvt);}
+  .badge.sec-latest{background:#FBE7C9; color:#8A5A17;}
+  .badge.sec-results{background:#DDEFE4; color:#20674A;}
+  .badge.sec-admit{background:#E3E0F5; color:#5B3FA0;}
+  .job-card h3{font-size:17px;}
+  .job-card .org{font-size:13px; color:var(--ink-50);}
+  .job-card .meta{font-size:12.5px; color:var(--ink-70);}
+  .job-card .meta strong{color:var(--navy);}
+  .job-card .actions{margin-top:auto; padding-top:8px;}
+  .btn-apply{display:block; text-align:center; background:var(--navy); color:#fff; padding:10px 18px; border-radius:8px; font-weight:700; font-size:13.5px; box-shadow:2px 2px 0 var(--marigold);}
+
+  /* ===== READER MODAL ===== */
+  .reader-overlay{position:fixed; inset:0; background:rgba(22,35,63,0.88); z-index:300; display:none; align-items:center; justify-content:center; flex-direction:column; padding:20px;}
+  .reader-overlay.open{display:flex;}
+  .reader-top{display:flex; justify-content:space-between; align-items:center; width:100%; max-width:760px; margin-bottom:12px;}
+  .reader-top h3{color:#fff; font-size:16px;}
+  .reader-top button{background:transparent; border:1.5px solid rgba(255,255,255,0.4); color:#fff; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600;}
+  .reader-canvas-wrap{background:#fff; border-radius:10px; overflow:auto; max-height:70vh; max-width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.4); user-select:none;}
+  #readerCanvas{display:block;}
+  .reader-nav{display:flex; align-items:center; gap:18px; margin-top:16px;}
+  .reader-nav button{background:var(--marigold); color:var(--navy); border:none; padding:10px 22px; border-radius:8px; font-weight:700; font-size:14px;}
+  .reader-nav button:disabled{opacity:0.35; cursor:not-allowed;}
+  .reader-nav .pageinfo{color:#fff; font-family:'IBM Plex Mono',monospace; font-size:13px;}
+  .protect-note{color:rgba(255,255,255,0.55); font-size:11.5px; margin-top:10px; font-f<!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
@@ -240,98 +350,7 @@
     .about-strip{grid-template-columns:1fr;}
     nav.pills{display:none;}
     #adminShell.show{flex-direction:column;}
-    .sidebar{width:100%; height:auto; position:relative; flex-direction:row; flex-wrap:wrap;}
-    .side-nav{flex-direction:row; flex-wrap:wrap;}
-    .form-row-2, .form-row-3{grid-template-columns:1fr;}
-  }
-</style>
-</head>
-<body>
-
-<!-- ============ PUBLIC SHELL ============ -->
-<div id="publicShell">
-  <header>
-    <div class="nav-row">
-      <div class="logo"><span class="dot"></span>Vidhyapath</div>
-      <nav class="pills">
-        <a href="#" id="navlink-home" class="p-home active" onclick="switchTab('home'); return false;">Home</a>
-        <a href="#" id="navlink-notes" class="p-notes" onclick="switchTab('notes'); return false;">📝 Notes</a>
-        <a href="https://your-test-app-url.com" target="_blank" rel="noopener" class="p-test">✏️ Test</a>
-        <a href="#" id="navlink-jobs" class="p-jobs" onclick="switchTab('jobs'); return false;">💼 Jobs</a>
-        <a href="#" id="navlink-about" class="p-about" onclick="switchTab('about'); return false;">About</a>
-      </nav>
-      <div class="role-links">
-        <button class="admin-entry" onclick="openAdminLoginModal()">⚙ Admin Login</button>
-        <div id="authArea" style="display:flex; align-items:center; gap:10px;">
-          <button class="cta-btn" onclick="openAuthModal()">Login</button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main class="wrap">
-
-    <!-- HOME -->
-    <section id="tab-home" class="tab-section active hero">
-      <div class="hero-grid">
-        <div>
-          <span class="eyebrow">Vidhyapath · आपकी तैयारी का रजिस्टर</span>
-          <h1>पढ़ो, जांचो,<br><span class="accent">आगे बढ़ो।</span></h1>
-          <p class="sub">एक जगह पर नोट्स, मॉक टेस्ट और नौकरी के अपडेट — बिना इधर-उधर भटके। अपनी तैयारी को रोज़ ट्रैक करें, ठीक एक रजिस्टर की तरह।</p>
-          <div class="hero-actions">
-            <a href="#" class="btn-primary" onclick="switchTab('notes'); return false;">Notes देखें</a>
-            <a href="https://your-test-app-url.com" target="_blank" rel="noopener" class="btn-ghost">Test शुरू करें</a>
-          </div>
-        </div>
-        <div class="register">
-          <div class="register-head"><h3>आज का रजिस्टर</h3><span>07 · 12 · 2026</span></div>
-          <div class="reg-row"><span class="label">Notes जोड़े गए</span><span class="count c-notes" id="regNotesCount">00</span></div>
-          <div class="reg-row"><span class="label">Live Tests</span><span class="count c-test">14</span></div>
-          <div class="reg-row"><span class="label">नई Job Alerts</span><span class="count c-jobs" id="regJobsCount">00</span></div>
-          <div class="stamp">VERIFIED<br>DATA · DEMO</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- NOTES (student) -->
-    <section id="tab-notes" class="tab-section">
-      <div class="section-head">
-        <span class="eyebrow">Notes</span>
-        <h2>Academic + Competitive Notes</h2>
-        <p>Apni preparation ke hisaab se category chunein aur notes padhein ya download karein.</p>
-      </div>
-      <div class="cat-toggle">
-        <button id="catAcademicPub" class="academic" onclick="setNotesCategory('academic')">Academic <span class="count mono" id="cntAcademicPub">(0)</span></button>
-        <button id="catCompetitivePub" class="competitive active" onclick="setNotesCategory('competitive')">Competitive <span class="count mono" id="cntCompetitivePub">(0)</span></button>
-      </div>
-      <div class="grid-3" id="notesGridPub"><div class="empty-state">Loading...</div></div>
-    </section>
-
-    <!-- JOBS (student) -->
-    <section id="tab-jobs" class="tab-section">
-      <div class="section-head">
-        <span class="eyebrow">Jobs</span>
-        <h2>सरकारी और Private नौकरी अपडेट्स</h2>
-        <p>Latest Jobs, Results aur Admit Card — sab ek jagah, roz update hota hua।</p>
-      </div>
-      <div class="cat-toggle">
-        <button id="catGovPub" class="gov active" onclick="setJobsCategory('government')">🏛 Government <span class="count mono" id="cntGovPub">(0)</span></button>
-        <button id="catPvtPub" class="pvt" onclick="setJobsCategory('private')">🏢 Private <span class="count mono" id="cntPvtPub">(0)</span></button>
-      </div>
-      <div class="sub-toggle">
-        <button id="secLatestPub" class="active" onclick="setJobsSection('latest')">Latest Jobs</button>
-        <button id="secResultsPub" onclick="setJobsSection('results')">Results</button>
-        <button id="secAdmitPub" onclick="setJobsSection('admitcard')">Admit Card</button>
-      </div>
-      <div class="grid-3" id="jobsGridPub"><div class="empty-state">Loading...</div></div>
-    </section>
-
-    <!-- ABOUT -->
-    <section id="tab-about" class="tab-section">
-      <div class="about-strip">
-        <div>
-          <span class="eyebrow" style="color:var(--marigold);">About</span>
-          <h2>Vidhyapath क्यों?</h2>
+    .sidebar{width:100%; height:a2>
           <p>हम मानते हैं कि सही तैयारी के लिए भटकने की ज़रूरत नहीं — सही नोट्स, सही अभ्यास और सही जानकारी एक ही जगह मिलनी चाहिए। यही Vidhyapath का मकसद है।</p>
         </div>
         <div class="about-stats">
