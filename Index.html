@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vidhyapath — पढ़ो, जांचो, आगे बढ़ो</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --navy:#16233F; --navy-soft:#2C3E63; --sidebar:#0F1930;
+    --paper:#EEF2F0; --paper-line:#DCE3DE; --card:#FFFFFF;
+    --marigold:#E8A33D; --teal:#1F6F6B; --coral:#D2574B;
+    --gov:#28407A; --gov-bg:#DCE7FF;
+    --pvt:#B04A3C; --pvt-bg:#F7DED9;
+    --ink-70: rgba(22,35,63,0.7); --ink-50: rgba(22,35,63,0.5);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0/100% 32px, var(--paper);
+    color:var(--navy); font-family:'Inter', sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Zilla Slab', serif; letter-spacing:-0.01em;}
+  .mono{font-family:'IBM Plex Mono', monospace; letter-spacing:0.02em;}
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 28px;}
+
+  /* ===== PUBLIC HEADER ===== */
+  header{position:sticky; top:0; z-index:50; background:rgba(238,242,240,0.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--paper-line);}
+  .nav-row{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:1120px; margin:0 auto;}
+  .logo{display:flex; align-items:center; gap:8px; font-family:'Zilla Slab', serif; font-weight:700; font-size:22px; color:var(--navy);}
+  .logo .dot{width:9px; height:9px; border-radius:50%; background:var(--marigold); display:inline-block;}
+  nav.pills{display:flex; gap:8px; flex-wrap:wrap;}
+  nav.pills a{padding:8px 16px; border-radius:999px; font-size:14.5px; font-weight:600; border:1.5px solid transparent; transition:all .15s ease; color:var(--ink-70);}
+  nav.pills a.p-home{background:#DCE7FF; color:#28407A;}
+  nav.pills a.p-notes{background:#E3E7DC; color:#4B5A3C;}
+  nav.pills a.p-test{background:#FBE7C9; color:#8A5A17;}
+  nav.pills a.p-jobs{background:#DDEFE4; color:#20674A;}
+  nav.pills a.p-about{background:transparent; color:var(--ink-50);}
+  nav.pills a:hover{transform:translateY(-1px); filter:brightness(0.96);}
+  nav.pills a.active{outline:1.5px solid currentColor;}
+  .role-links{display:flex; align-items:center; gap:10px;}
+  .cta-btn{background:var(--navy); color:#fff; padding:9px 20px; border-radius:999px; font-weight:600; font-size:14.5px; border:none;}
+  .admin-entry{
+    background:transparent; color:var(--ink-50); padding:8px 16px; border-radius:999px;
+    font-weight:600; font-size:13px; border:1.5px dashed var(--ink-50);
+  }
+  .admin-entry:hover{color:var(--navy); border-color:var(--navy);}
+  .user-chip{font-size:13px; color:var(--ink-70); padding:8px 4px;}
+
+  /* ===== AUTH MODAL ===== */
+  .auth-overlay{position:fixed; inset:0; background:rgba(22,35,63,0.55); z-index:500; display:none; align-items:center; justify-content:center; padding:20px;}
+  .auth-overlay.open{display:flex;}
+  .auth-card{background:var(--card); border-radius:var(--radius); padding:30px; width:100%; max-width:400px; position:relative; box-shadow:0 30px 60px -20px rgba(22,35,63,0.5);}
+  .auth-close{position:absolute; top:16px; right:16px; background:transparent; border:none; font-size:16px; color:var(--ink-50);}
+  .auth-tabs{display:flex; gap:6px; margin-bottom:22px; background:var(--paper); border-radius:10px; padding:4px;}
+  .auth-tabs button{flex:1; padding:9px; border:none; background:transparent; border-radius:8px; font-weight:700; font-size:13.5px; color:var(--ink-50);}
+  .auth-tabs button.active{background:var(--navy); color:#fff;}
+  .auth-form{display:none;}
+  .auth-form.active{display:block;}
+  .auth-form .form-row{margin-bottom:14px;}
+  .auth-form label{display:block; font-size:12.5px; font-weight:600; margin-bottom:5px; color:var(--navy);}
+  .auth-form input, .auth-form select{width:100%; padding:10px 12px; border-radius:8px; border:1.5px solid var(--paper-line); font-family:'Inter',sans-serif; font-size:13.5px; background:var(--paper);}
+  .auth-error{color:var(--coral); font-size:12.5px; margin-bottom:10px; min-height:14px;}
+  .pw-wrap{position:relative;}
+  .pw-wrap input{padding-right:64px !important;}
+  .pw-toggle{position:absolute; right:6px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:11.5px; font-weight:700; color:var(--teal); padding:4px 6px;}
+
+  /* ===== TAB SECTIONS (Home/Notes/Test/Jobs/About) ===== */
+  .tab-section{display:none;}
+  .tab-section.active{display:block;}
+  section{padding:64px 0;}
+  .section-head{margin-bottom:32px; max-width:640px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--teal); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:10px; display:block;}
+  .section-head h2{font-size:30px; color:var(--navy);}
+  .section-head p{margin-top:10px; color:var(--ink-70); font-size:15.5px; line-height:1.6;}
+
+  /* HERO */
+  .hero{padding:56px 0 40px !important;}
+  .hero-grid{display:grid; grid-template-columns:1.1fr 0.9fr; gap:56px; align-items:center;}
+  .hero h1{font-size:clamp(34px,4.2vw,52px); line-height:1.12; color:var(--navy); font-weight:700;}
+  .hero h1 .accent{color:var(--marigold); font-style:italic; font-weight:600;}
+  .hero p.sub{margin-top:20px; font-size:17px; line-height:1.6; color:var(--ink-70); max-width:480px;}
+  .hero-actions{display:flex; gap:14px; margin-top:32px; flex-wrap:wrap;}
+  .btn-primary{background:var(--marigold); color:var(--navy); padding:13px 26px; border-radius:10px; font-weight:700; font-size:15px; box-shadow:3px 3px 0 var(--navy); transition:transform .12s; border:none;}
+  .btn-primary:hover{transform:translate(-2px,-2px); box-shadow:5px 5px 0 var(--navy);}
+  .btn-ghost{padding:13px 22px; border-radius:10px; font-weight:600; font-size:15px; border:1.5px solid var(--navy); color:var(--navy);}
+
+  .register{background:var(--card); border-radius:var(--radius); padding:26px 26px 22px; box-shadow:0 1px 0 var(--paper-line), 0 20px 40px -24px rgba(22,35,63,0.35); position:relative; border:1px solid var(--paper-line);}
+  .register::before{content:""; position:absolute; inset:8px; border:1px dashed rgba(22,35,63,0.15); border-radius:10px; pointer-events:none;}
+  .register-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:1.5px solid var(--navy); padding-bottom:10px; margin-bottom:6px;}
+  .register-head h3{font-size:16px; color:var(--navy);}
+  .register-head span{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-50);}
+  .reg-row{display:flex; justify-content:space-between; align-items:center; padding:13px 2px; border-bottom:1px dashed var(--paper-line); font-size:14.5px;}
+  .reg-row:last-of-type{border-bottom:none;}
+  .reg-row .label{color:var(--ink-70); font-weight:500;}
+  .reg-row .count{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:15px;}
+  .c-notes{color:#4B5A3C;} .c-test{color:#8A5A17;} .c-jobs{color:#20674A;}
+  .stamp{position:absolute; right:20px; bottom:18px; width:78px; height:78px; border:2.5px solid var(--coral); border-radius:50%; display:flex; align-items:center; justify-content:center; text-align:center; transform:rotate(-14deg); color:var(--coral); font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700; line-height:1.25; letter-spacing:0.03em; opacity:0.85;}
+
+  .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  .feature-card{background:var(--card); border-radius:var(--radius); padding:24px; border-top:4px solid var(--navy); border:1px solid var(--paper-line); box-shadow:0 12px 24px -20px rgba(22,35,63,0.4);}
+  .feature-card.notes{border-top-color:#6C7D57;}
+  .feature-card.test{border-top-color:var(--marigold);}
+  .feature-card.jobs{border-top-color:var(--teal);}
+  .feature-card .tag{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-50); text-transform:uppercase;}
+  .feature-card h3{font-size:20px; margin-top:8px; color:var(--navy);}
+  .feature-card p{margin-top:10px; font-size:14.5px; color:var(--ink-70); line-height:1.55;}
+  .feature-card .stub-list{margin-top:16px; display:flex; flex-direction:column; gap:8px;}
+  .stub-item{display:flex; justify-content:space-between; font-size:13.5px; padding:10px 12px; background:var(--paper); border-radius:8px; color:var(--ink-70);}
+  .stub-item .badge{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-50);}
+
+  .about-strip{background:var(--navy); color:#EEF2F0; border-radius:20px; padding:48px 40px; display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center;}
+  .about-strip h2{color:#fff; font-size:26px;}
+  .about-strip p{margin-top:14px; font-size:15px; line-height:1.65; color:rgba(238,242,240,0.75);}
+  .about-stats{display:flex; gap:28px; flex-wrap:wrap;}
+  .about-stats div{font-family:'IBM Plex Mono',monospace;}
+  .about-stats .num{font-size:26px; font-weight:600; color:var(--marigold);}
+  .about-stats .lbl{font-size:11.5px; color:rgba(238,242,240,0.6); text-transform:uppercase; margin-top:4px;}
+
+  footer{padding:36px 0 48px; border-top:1px solid var(--paper-line); margin-top:20px;}
+  .footer-row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
+  .footer-row .mono{font-size:12px; color:var(--ink-50);}
+
+  /* ===== NOTES (student) ===== */
+  .cat-toggle{display:flex; gap:10px; margin:8px 0 28px; flex-wrap:wrap;}
+  .cat-toggle button{padding:10px 20px; border-radius:12px; font-weight:700; font-size:14px; border:1.5px solid var(--paper-line); background:var(--card); color:var(--ink-70);}
+  .cat-toggle button.active.academic{background:#DCE7FF; border-color:#28407A; color:#28407A;}
+  .cat-toggle button.active.competitive{background:#FBE7C9; border-color:#8A5A17; color:#8A5A17;}
+  .cat-toggle button.active.gov{background:var(--gov-bg); border-color:var(--gov); color:var(--gov);}
+  .cat-toggle button.active.pvt{background:var(--pvt-bg); border-color:var(--pvt); color:var(--pvt);}
+  .cat-toggle .count{font-family:'IBM Plex Mono',monospace; font-size:11px; opacity:0.7; margin-left:4px;}
+
+  .note-card{background:var(--card); border-radius:var(--radius); padding:22px; border:1px solid var(--paper-line); border-top:4px solid var(--marigold); box-shadow:0 12px 24px -20px rgba(22,35,63,0.4); display:flex; flex-direction:column; gap:10px;}
+  .note-card.mode-only{border-top-color:var(--teal);}
+  .note-card .tags{display:flex; gap:6px; flex-wrap:wrap;}
+  .badge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; padding:4px 8px; border-radius:6px; text-transform:uppercase;}
+  .badge.access-dl{background:#FBE7C9; color:#8A5A17;}
+  .badge.access-only{background:#DDEFE4; color:#20674A;}
+  .badge.cat{background:var(--paper); color:var(--ink-50); border:1px solid var(--paper-line);}
+  .note-card h3{font-size:18px;}
+  .note-card .sub{font-size:13px; color:var(--ink-50);}
+  .note-card .filename{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-50); margin-top:4px;}
+  .note-card .actions{margin-top:auto; padding-top:10px;}
+  .btn-primary-full{background:var(--marigold); color:var(--navy); padding:10px 18px; border-radius:8px; font-weight:700; font-size:13.5px; border:none; box-shadow:2px 2px 0 var(--navy); width:100%;}
+  .btn-teal-full{background:var(--teal); color:#fff; padding:10px 18px; border-radius:8px; font-weight:700; font-size:13.5px; border:none; box-shadow:2px 2px 0 var(--navy); width:100%;}
+  .empty-state{grid-column:1/-1; text-align:center; padding:48px 20px; border:1.5px dashed var(--paper-line); border-radius:var(--radius); color:var(--ink-50); font-size:14px;}
+
+  /* ===== JOBS (student) ===== */
+  .sub-toggle{display:flex; gap:8px; margin-bottom:28px; flex-wrap:wrap;}
+  .sub-toggle button{padding:8px 16px; border-radius:999px; font-weight:600; font-size:13px; border:1.5px solid var(--paper-line); background:transparent; color:var(--ink-50);}
+  .sub-toggle button.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+  .job-card{background:var(--card); border-radius:var(--radius); padding:22px; border:1px solid var(--paper-line); border-top:4px solid var(--gov); box-shadow:0 12px 24px -20px rgba(22,35,63,0.4); display:flex; flex-direction:column; gap:8px;}
+  .job-card.pvt-card{border-top-color:var(--pvt);}
+  .badge.sec-latest{background:#FBE7C9; color:#8A5A17;}
+  .badge.sec-results{background:#DDEFE4; color:#20674A;}
+  .badge.sec-admit{background:#E3E0F5; color:#5B3FA0;}
+  .job-card h3{font-size:17px;}
+  .job-card .org{font-size:13px; color:var(--ink-50);}
+  .job-card .meta{font-size:12.5px; color:var(--ink-70);}
+  .job-card .meta strong{color:var(--navy);}
+  .job-card .actions{margin-top:auto; padding-top:8px;}
+  .btn-apply{display:block; text-align:center; background:var(--navy); color:#fff; padding:10px 18px; border-radius:8px; font-weight:700; font-size:13.5px; box-shadow:2px 2px 0 var(--marigold);}
+
+  /* ===== READER MODAL ===== */
+  .reader-overlay{position:fixed; inset:0; background:rgba(22,35,63,0.88); z-index:300; display:none; align-items:center; justify-content:center; flex-direction:column; padding:20px;}
+  .reader-overlay.open{display:flex;}
+  .reader-top{display:flex; justify-content:space-between; align-items:center; width:100%; max-width:760px; margin-bottom:12px;}
+  .reader-top h3{color:#fff; font-size:16px;}
+  .reader-top button{background:transparent; border:1.5px solid rgba(255,255,255,0.4); color:#fff; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600;}
+  .reader-canvas-wrap{background:#fff; border-radius:10px; overflow:auto; max-height:70vh; max-width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.4); user-select:none;}
+  #readerCanvas{display:block;}
+  .reader-nav{display:flex; align-items:center; gap:18px; margin-top:16px;}
+  .reader-nav button{background:var(--marigold); color:var(--navy); border:none; padding:10px 22px; border-radius:8px; font-weight:700; font-size:14px;}
+  .reader-nav button:disabled{opacity:0.35; cursor:not-allowed;}
+  .reader-nav .pageinfo{color:#fff; font-family:'IBM Plex Mono',monospace; font-size:13px;}
+  .protect-note{color:rgba(255,255,255,0.55); font-size:11.5px; margin-top:10px; font-family:'IBM Plex Mono',monospace;}
+
+  /* ===== TOAST ===== */
+  .toast{position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--navy); color:#fff; padding:13px 22px; border-radius:10px; font-size:13.5px; font-weight:600; opacity:0; pointer-events:none; transition:all .25s ease; z-index:400; box-shadow:0 10px 24px rgba(0,0,0,0.25);}
+  .toast.err{background:var(--coral);}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ===== ADMIN SHELL ===== */
+  #adminShell{display:none; min-height:100vh;}
+  #adminShell.show{display:flex;}
+  .sidebar{width:230px; background:var(--sidebar); color:#EEF2F0; flex-shrink:0; display:flex; flex-direction:column; padding:26px 18px; position:sticky; top:0; height:100vh;}
+  .sidebar .logo{display:flex; align-items:center; gap:8px; font-family:'Zilla Slab',serif; font-weight:700; font-size:19px; margin-bottom:6px; color:#fff;}
+  .sidebar .logo .dot{width:8px; height:8px; border-radius:50%; background:var(--marigold);}
+  .sidebar .tag{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:rgba(238,242,240,0.45); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:28px;}
+  .side-nav{display:flex; flex-direction:column; gap:4px;}
+  .side-nav a{display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:9px; color:rgba(238,242,240,0.65); font-size:14px; font-weight:500;}
+  .side-nav a.active{background:rgba(232,163,61,0.15); color:var(--marigold); font-weight:700;}
+  .side-nav a.disabled{opacity:0.35; cursor:not-allowed;}
+  .admin-chip{margin-top:auto; display:flex; align-items:center; gap:10px; padding:12px; background:rgba(255,255,255,0.06); border-radius:10px; font-size:12.5px;}
+  .admin-chip .av{width:30px; height:30px; border-radius:50%; background:var(--marigold); display:flex; align-items:center; justify-content:center; color:var(--navy); font-weight:700; font-size:13px;}
+  .admin-chip .role{font-family:'IBM Plex Mono',monospace; font-size:10px; color:rgba(238,242,240,0.5);}
+  .back-link{display:block; margin-top:10px; font-size:11.5px; color:rgba(238,242,240,0.55); font-family:'IBM Plex Mono',monospace; background:none; border:none; text-align:left; padding:0; cursor:pointer;}
+
+  .admin-main{flex:1; padding:36px 44px; max-width:980px;}
+  .admin-section{display:none;}
+  .admin-section.active{display:block;}
+  .topbar h1{font-size:26px;}
+  .subtext{color:var(--ink-70); font-size:14px; margin-bottom:30px;}
+  .form-card{background:var(--card); border-radius:var(--radius); padding:30px; border:1px solid var(--paper-line); box-shadow:0 20px 40px -28px rgba(22,35,63,0.35); margin-bottom:40px;}
+  .form-card h2{font-size:18px; margin-bottom:20px;}
+  .form-row{margin-bottom:18px;}
+  .form-row label{display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--navy);}
+  .form-row label .req{color:var(--coral);}
+  .form-row label .opt{font-weight:400; color:var(--ink-50);}
+  .form-row input[type=text], .form-row select{width:100%; padding:11px 13px; border-radius:8px; border:1.5px solid var(--paper-line); font-family:'Inter',sans-serif; font-size:14px; background:var(--paper);}
+  .form-row input.error, .form-row select.error, .form-row .file-drop.error{border-color:var(--coral); background:#FBEAE8;}
+  .form-row-2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .form-row-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;}
+  .file-drop{border:1.5px dashed var(--paper-line); border-radius:10px; padding:20px; text-align:center; font-size:13.5px; color:var(--ink-50); background:var(--paper); cursor:pointer;}
+  .file-drop.has-file{color:var(--teal); border-color:var(--teal); font-weight:600;}
+  .form-note{font-size:12px; color:var(--ink-50); margin-top:6px;}
+  .submit-btn{background:var(--navy); color:#fff; padding:13px 26px; border-radius:10px; font-weight:700; font-size:14.5px; border:none; box-shadow:3px 3px 0 var(--marigold); margin-top:6px;}
+  .manage-card{background:var(--card); border-radius:var(--radius); border:1px solid var(--paper-line); overflow:hidden;}
+  .manage-head{padding:20px 24px; border-bottom:1px solid var(--paper-line); display:flex; justify-content:space-between; align-items:center;}
+  .manage-head h2{font-size:17px;}
+  table{width:100%; border-collapse:collapse;}
+  th{text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; color:var(--ink-50); padding:12px 16px; border-bottom:1px solid var(--paper-line);}
+  td{padding:14px 16px; border-bottom:1px solid var(--paper-line); font-size:13.5px;}
+  tr:last-child td{border-bottom:none;}
+  .badge.gov{background:#DCE7FF; color:#28407A;}
+  .badge.pvt{background:#F7DED9; color:#B04A3C;}
+  .del-btn{background:transparent; border:1px solid var(--coral); color:var(--coral); padding:6px 12px; border-radius:7px; font-size:12px; font-weight:600;}
+  .empty-row{text-align:center; padding:36px; color:var(--ink-50); font-size:13.5px;}
+
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:1fr;}
+    .grid-3{grid-template-columns:1fr;}
+    .about-strip{grid-template-columns:1fr;}
+    nav.pills{display:none;}
+    #adminShell.show{flex-direction:column;}
+    .sidebar{width:100%; height:auto; position:relative; flex-direction:row; flex-wrap:wrap;}
+    .side-nav{flex-direction:row; flex-wrap:wrap;}
+    .form-row-2, .form-row-3{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PUBLIC SHELL ============ -->
+<div id="publicShell">
+  <header>
+    <div class="nav-row">
+      <div class="logo"><span class="dot"></span>Vidhyapath</div>
+      <nav class="pills">
+        <a href="#" id="navlink-home" class="p-home active" onclick="switchTab('home'); return false;">Home</a>
+        <a href="#" id="navlink-notes" class="p-notes" onclick="switchTab('notes'); return false;">📝 Notes</a>
+        <a href="https://your-test-app-url.com" target="_blank" rel="noopener" class="p-test">✏️ Test</a>
+        <a href="#" id="navlink-jobs" class="p-jobs" onclick="switchTab('jobs'); return false;">💼 Jobs</a>
+        <a href="#" id="navlink-about" class="p-about" onclick="switchTab('about'); return false;">About</a>
+      </nav>
+      <div class="role-links">
+        <button class="admin-entry" onclick="openAdminLoginModal()">⚙ Admin Login</button>
+        <div id="authArea" style="display:flex; align-items:center; gap:10px;">
+          <button class="cta-btn" onclick="openAuthModal()">Login</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- HOME -->
+    <section id="tab-home" class="tab-section active hero">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">Vidhyapath · आपकी तैयारी का रजिस्टर</span>
+          <h1>पढ़ो, जांचो,<br><span class="accent">आगे बढ़ो।</span></h1>
+          <p class="sub">एक जगह पर नोट्स, मॉक टेस्ट और नौकरी के अपडेट — बिना इधर-उधर भटके। अपनी तैयारी को रोज़ ट्रैक करें, ठीक एक रजिस्टर की तरह।</p>
+          <div class="hero-actions">
+            <a href="#" class="btn-primary" onclick="switchTab('notes'); return false;">Notes देखें</a>
+            <a href="https://your-test-app-url.com" target="_blank" rel="noopener" class="btn-ghost">Test शुरू करें</a>
+          </div>
+        </div>
+        <div class="register">
+          <div class="register-head"><h3>आज का रजिस्टर</h3><span>07 · 12 · 2026</span></div>
+          <div class="reg-row"><span class="label">Notes जोड़े गए</span><span class="count c-notes" id="regNotesCount">00</span></div>
+          <div class="reg-row"><span class="label">Live Tests</span><span class="count c-test">14</span></div>
+          <div class="reg-row"><span class="label">नई Job Alerts</span><span class="count c-jobs" id="regJobsCount">00</span></div>
+          <div class="stamp">VERIFIED<br>DATA · DEMO</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOTES (student) -->
+    <section id="tab-notes" class="tab-section">
+      <div class="section-head">
+        <span class="eyebrow">Notes</span>
+        <h2>Academic + Competitive Notes</h2>
+        <p>Apni preparation ke hisaab se category chunein aur notes padhein ya download karein.</p>
+      </div>
+      <div class="cat-toggle">
+        <button id="catAcademicPub" class="academic" onclick="setNotesCategory('academic')">Academic <span class="count mono" id="cntAcademicPub">(0)</span></button>
+        <button id="catCompetitivePub" class="competitive active" onclick="setNotesCategory('competitive')">Competitive <span class="count mono" id="cntCompetitivePub">(0)</span></button>
+      </div>
+      <div class="grid-3" id="notesGridPub"><div class="empty-state">Loading...</div></div>
+    </section>
+
+    <!-- JOBS (student) -->
+    <section id="tab-jobs" class="tab-section">
+      <div class="section-head">
+        <span class="eyebrow">Jobs</span>
+        <h2>सरकारी और Private नौकरी अपडेट्स</h2>
+        <p>Latest Jobs, Results aur Admit Card — sab ek jagah, roz update hota hua।</p>
+      </div>
+      <div class="cat-toggle">
+        <button id="catGovPub" class="gov active" onclick="setJobsCategory('government')">🏛 Government <span class="count mono" id="cntGovPub">(0)</span></button>
+        <button id="catPvtPub" class="pvt" onclick="setJobsCategory('private')">🏢 Private <span class="count mono" id="cntPvtPub">(0)</span></button>
+      </div>
+      <div class="sub-toggle">
+        <button id="secLatestPub" class="active" onclick="setJobsSection('latest')">Latest Jobs</button>
+        <button id="secResultsPub" onclick="setJobsSection('results')">Results</button>
+        <button id="secAdmitPub" onclick="setJobsSection('admitcard')">Admit Card</button>
+      </div>
+      <div class="grid-3" id="jobsGridPub"><div class="empty-state">Loading...</div></div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="tab-about" class="tab-section">
+      <div class="about-strip">
+        <div>
+          <span class="eyebrow" style="color:var(--marigold);">About</span>
+          <h2>Vidhyapath क्यों?</h2>
+          <p>हम मानते हैं कि सही तैयारी के लिए भटकने की ज़रूरत नहीं — सही नोट्स, सही अभ्यास और सही जानकारी एक ही जगह मिलनी चाहिए। यही Vidhyapath का मकसद है।</p>
+        </div>
+        <div class="about-stats">
+          <div><div class="num">12k+</div><div class="lbl">Students</div></div>
+          <div><div class="num" id="aboutNotesCount">400+</div><div class="lbl">Notes</div></div>
+          <div><div class="num">85+</div><div class="lbl">Mock Tests</div></div>
+          <div><div class="num" id="aboutJobsCount">60+</div><div class="lbl">Job Alerts</div></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="wrap">
+    <div class="footer-row">
+      <span class="mono">© 2026 VIDHYAPATH — PHASE 2 · SINGLE-FILE PREVIEW</span>
+      <span class="mono">FULL AUTH & SUPABASE → PHASE 3+</span>
+    </div>
+  </footer>
+</div>
+
+<!-- ============ ADMIN SHELL ============ -->
+<div id="adminShell">
+  <aside class="sidebar">
+    <div class="logo"><span class="dot"></span>Vidhyapath</div>
+    <div class="tag">Admin Panel</div>
+    <nav class="side-nav">
+      <a href="#" id="sidelink-notes" class="active" onclick="switchAdminTab('notes'); return false;">📝 Notes</a>
+      <a href="#" class="disabled">✏️ Tests <span class="mono" style="margin-left:auto; font-size:9px;">soon</span></a>
+      <a href="#" id="sidelink-jobs" onclick="switchAdminTab('jobs'); return false;">💼 Jobs</a>
+      <a href="#" class="disabled">🎓 Students <span class="mono" style="margin-left:auto; font-size:9px;">soon</span></a>
+    </nav>
+    <div class="admin-chip">
+      <div class="av" id="adminChipAv">A</div>
+      <div><div id="adminChipName">Admin</div><div class="role">ROLE · ADMIN</div></div>
+    </div>
+    <button class="back-link" onclick="exitAdmin()">← Student site pe wapas</button>
+  </aside>
+
+  <main class="admin-main">
+    <!-- ADMIN: NOTES -->
+    <section id="admin-notes" class="admin-section active">
+      <div class="topbar"><span class="eyebrow">Content Management</span><h1>Notes Upload &amp; Manage</h1></div>
+      <p class="subtext">Ye panel sirf Admin ko dikhta hai — students ko ye kabhi nahi dikhega (Phase 3 me real login ke peeche lock hoga).</p>
+      <div class="form-card">
+        <h2>Naya Note Upload Karein</h2>
+        <form id="noteUploadForm">
+          <div class="form-row-2">
+            <div class="form-row"><label>Subject <span class="req">*</span></label><input type="text" id="note-subject" placeholder="e.g. General Studies"></div>
+            <div class="form-row"><label>Topic <span class="req">*</span></label><input type="text" id="note-topic" placeholder="e.g. भारतीय संविधान"></div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-row">
+              <label>Category <span class="req">*</span></label>
+              <select id="note-category">
+                <option value="competitive" selected>Competitive (SSC / Bank / TCS)</option>
+                <option value="academic">Academic (9th–Graduation)</option>
+              </select>
+            </div>
+            <div class="form-row"><label>Class / Exam <span class="opt">(optional)</span></label><input type="text" id="note-examclass" placeholder="e.g. SSC CGL / 10th"></div>
+          </div>
+          <div class="form-row">
+            <label>Access Mode <span class="req">*</span></label>
+            <select id="note-access">
+              <option value="download_read">Download & Read (watermarked PDF)</option>
+              <option value="only_read">Only Read (page-by-page, protected)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>PDF File <span class="req">*</span></label>
+            <div class="file-drop" id="noteFileDropLabel" onclick="document.getElementById('note-file').click()">📄 PDF chunein ya yahan click karein</div>
+            <input type="file" id="note-file" accept="application/pdf" style="display:none">
+            <div class="form-note">Sirf .pdf files supported hain is demo me।</div>
+          </div>
+          <button type="submit" class="submit-btn">Note Upload Karein</button>
+        </form>
+      </div>
+      <div class="manage-card">
+        <div class="manage-head"><h2>Uploaded Notes</h2><span class="mono" id="noteCount">0 notes</span></div>
+        <table>
+          <thead><tr><th>Subject / Topic</th><th>Category</th><th>Access</th><th>File</th><th></th></tr></thead>
+          <tbody id="notesTableBody"><tr><td colspan="5" class="empty-row">Abhi koi note upload nahi hua।</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ADMIN: JOBS -->
+    <section id="admin-jobs" class="admin-section">
+      <div class="topbar"><span class="eyebrow">Content Management</span><h1>Jobs Upload &amp; Manage</h1></div>
+      <p class="subtext">Government aur Private dono category yahin se add hoti hain — Latest Jobs, Results, Admit Card teeno sections ke liye same form।</p>
+      <div class="form-card">
+        <h2>Nayi Job Entry Add Karein</h2>
+        <form id="jobUploadForm">
+          <div class="form-row-2">
+            <div class="form-row">
+              <label>Category <span class="req">*</span></label>
+              <select id="job-category"><option value="government" selected>Government</option><option value="private">Private</option></select>
+            </div>
+            <div class="form-row">
+              <label>Section <span class="req">*</span></label>
+              <select id="job-section"><option value="latest" selected>Latest Jobs</option><option value="results">Results</option><option value="admitcard">Admit Card</option></select>
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-row"><label>Job / Post Title <span class="req">*</span></label><input type="text" id="job-title" placeholder="e.g. SSC CGL 2026"></div>
+            <div class="form-row"><label>Organization / Company <span class="req">*</span></label><input type="text" id="job-org" placeholder="e.g. Staff Selection Commission"></div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-row"><label>Vacancies <span class="opt">(optional)</span></label><input type="text" id="job-vacancies" placeholder="e.g. 3,200+"></div>
+            <div class="form-row"><label id="jobDateLabel">Last Date <span class="opt">(optional)</span></label><input type="text" id="job-date" placeholder="e.g. 30 Jul 2026"></div>
+            <div class="form-row"><label>Eligibility <span class="opt">(optional)</span></label><input type="text" id="job-eligibility" placeholder="e.g. Graduate"></div>
+          </div>
+          <div class="form-row">
+            <label>Official Link <span class="req">*</span></label>
+            <input type="text" id="job-link" placeholder="https://...">
+            <div class="form-note">Apply / Result / Admit Card ka direct link — student yahin click karega।</div>
+          </div>
+          <button type="submit" class="submit-btn">Job Entry Add Karein</button>
+        </form>
+      </div>
+      <div class="manage-card">
+        <div class="manage-head"><h2>Saari Jobs</h2><span class="mono" id="jobCount">0 entries</span></div>
+        <table>
+          <thead><tr><th>Title / Org</th><th>Category</th><th>Section</th><th>Link</th><th></th></tr></thead>
+          <tbody id="jobsTableBody"><tr><td colspan="5" class="empty-row">Abhi koi job add nahi hui।</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Reader Modal (student Only-Read viewer) -->
+<div class="reader-overlay" id="readerModal">
+  <div class="reader-top"><h3 id="readerTitle">Note</h3><button id="closeReaderBtn">✕ Close</button></div>
+  <div class="reader-canvas-wrap"><canvas id="readerCanvas"></canvas></div>
+  <div class="reader-nav">
+    <button id="prevPageBtn">← Previous</button>
+    <span class="pageinfo mono" id="readerPageInfo">Page 1 / 1</span>
+    <button id="nextPageBtn">Next →</button>
+  </div>
+  <div class="protect-note">COPY · SCREENSHOT-SELECT · RIGHT-CLICK DISABLED</div>
+</div>
+
+<!-- Admin Login Modal (separate from student Login/Signup) -->
+<div class="auth-overlay" id="adminLoginModal">
+  <div class="auth-card" style="border-top:4px solid var(--navy);">
+    <button class="auth-close" onclick="closeAdminLoginModal()">✕</button>
+    <h2 style="font-size:18px; margin-bottom:4px;">⚙ Admin Login</h2>
+    <p style="font-size:12.5px; color:var(--ink-50); margin-bottom:20px;">Sirf authorized admin accounts ke liye — student signup yahan nahi hota।</p>
+    <form id="adminLoginForm">
+      <div class="form-row"><label>Email</label><input type="text" id="admin-login-email" placeholder="admin@vidhyapath.com"></div>
+      <div class="form-row">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="admin-login-password" placeholder="••••••••">
+          <button type="button" class="pw-toggle" onclick="togglePw('admin-login-password', this)">दिखाएं</button>
+        </div>
+      </div>
+      <div class="auth-error" id="adminLoginError"></div>
+      <button type="submit" class="submit-btn" style="width:100%;">Admin Login</button>
+    </form>
+  </div>
+</div>
+
+<!-- Auth Modal (Login / Signup) -->
+<div class="auth-overlay" id="authModal">
+  <div class="auth-card">
+    <button class="auth-close" onclick="closeAuthModal()">✕</button>
+    <div class="auth-tabs">
+      <button id="authTabLogin" class="active" onclick="switchAuthTab('login')">Login</button>
+      <button id="authTabSignup" onclick="switchAuthTab('signup')">Signup</button>
+    </div>
+
+    <form id="loginForm" class="auth-form active">
+      <div class="form-row"><label>Email</label><input type="text" id="login-email" placeholder="aapka@email.com"></div>
+      <div class="form-row">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="login-password" placeholder="••••••••">
+          <button type="button" class="pw-toggle" onclick="togglePw('login-password', this)">दिखाएं</button>
+        </div>
+      </div>
+      <div class="auth-error" id="loginError"></div>
+      <button type="submit" class="submit-btn" style="width:100%;">Login</button>
+    </form>
+
+    <form id="signupForm" class="auth-form">
+      <div class="form-row"><label>Poora Naam</label><input type="text" id="signup-name" placeholder="e.g. Ashutosh Kumar"></div>
+      <div class="form-row"><label>Email</label><input type="text" id="signup-email" placeholder="aapka@email.com"></div>
+      <div class="form-row"><label>Mobile Number</label><input type="text" id="signup-phone" placeholder="e.g. 9876543210" maxlength="10"></div>
+      <div class="form-row">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="signup-password" placeholder="कम से कम 6 characters">
+          <button type="button" class="pw-toggle" onclick="togglePw('signup-password', this)">दिखाएं</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Password Verify करें</label>
+        <div class="pw-wrap">
+          <input type="password" id="signup-password-confirm" placeholder="Password dubara likhein">
+          <button type="button" class="pw-toggle" onclick="togglePw('signup-password-confirm', this)">दिखाएं</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Exam Category</label>
+        <select id="signup-category">
+          <option value="competitive" selected>Competitive (SSC / Bank / TCS)</option>
+          <option value="academic">Academic (9th–Graduation)</option>
+        </select>
+      </div>
+      <div class="auth-error" id="signupError"></div>
+      <button type="submit" class="submit-btn" style="width:100%;">Signup</button>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+/* ---------- Supabase ---------- */
+const SUPABASE_URL = 'https://iyzujwixwfydmkzmhrxo.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_4t1qso9eT9lNU_aGnS8hiQ_zX3EGBXd';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null;
+let currentProfile = null;
+
+const NOTES_KEY = 'vidhyapath_notes_v1';
+const JOBS_KEY = 'vidhyapath_jobs_v1';
+let currentNotesCategory = 'competitive';
+let currentJobsCategory = 'government';
+let currentJobsSection = 'latest';
+let currentReader = null;
+
+/* ---------- helpers ---------- */
+function bytesToBase64(bytes){ let b=''; const c=0x8000; for(let i=0;i<bytes.length;i+=c){ b+=String.fromCharCode.apply(null, bytes.subarray(i,i+c)); } return btoa(b); }
+function base64ToBytes(b64){ const bin=atob(b64); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); return bytes; }
+function loadNotes(){ try{ const r=localStorage.getItem(NOTES_KEY); return r?JSON.parse(r):[]; }catch(e){ return []; } }
+function saveNotes(n){ localStorage.setItem(NOTES_KEY, JSON.stringify(n)); }
+function loadJobs(){ try{ const r=localStorage.getItem(JOBS_KEY); return r?JSON.parse(r):[]; }catch(e){ return []; } }
+function saveJobs(j){ localStorage.setItem(JOBS_KEY, JSON.stringify(j)); }
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+function showToast(msg, isErr){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.toggle('err', !!isErr); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2600); }
+function toggleError(id, isError){ document.getElementById(id).classList.toggle('error', isError); }
+
+/* ---------- tab switching (public) ---------- */
+function switchTab(tab){
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('nav.pills a[id^="navlink-"]').forEach(a=>a.classList.remove('active'));
+  document.getElementById('navlink-'+tab).classList.add('active');
+  if(tab==='home') updateHomeCounts();
+  if(tab==='notes') renderNotesGridPub();
+  if(tab==='jobs') renderJobsGridPub();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------- admin shell toggle (guarded by real role now) ---------- */
+function enterAdmin(){
+  if(!currentProfile || currentProfile.role !== 'admin'){ showToast('Aap Admin nahi hain', true); return; }
+  document.getElementById('publicShell').style.display='none';
+  document.getElementById('adminShell').classList.add('show');
+  const name = currentProfile.full_name || (currentUser && currentUser.email) || 'Admin';
+  document.getElementById('adminChipName').textContent = name;
+  document.getElementById('adminChipAv').textContent = name.charAt(0).toUpperCase();
+  switchAdminTab('notes');
+}
+function exitAdmin(){
+  document.getElementById('adminShell').classList.remove('show');
+  document.getElementById('publicShell').style.display='block';
+  switchTab('home');
+}
+
+/* ---------- ADMIN LOGIN (separate flow, no signup) ---------- */
+function openAdminLoginModal(){ document.getElementById('adminLoginModal').classList.add('open'); }
+function closeAdminLoginModal(){
+  document.getElementById('adminLoginModal').classList.remove('open');
+  document.getElementById('adminLoginError').textContent = '';
+}
+document.getElementById('adminLoginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('admin-login-email').value.trim();
+  const password = document.getElementById('admin-login-password').value;
+  const errEl = document.getElementById('adminLoginError');
+  errEl.textContent = '';
+  if(!email || !password){ errEl.textContent = 'Email aur Password dono bharein।'; return; }
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if(error){ errEl.textContent = error.message; return; }
+  const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.user.id).single();
+  if(!profile || profile.role !== 'admin'){
+    await supabaseClient.auth.signOut();
+    errEl.textContent = 'Ye account Admin nahi hai।';
+    return;
+  }
+  currentUser = data.user;
+  currentProfile = profile;
+  closeAdminLoginModal();
+  await refreshAuthUI();
+  enterAdmin();
+});
+
+/* ---------- AUTH: modal open/close/tabs (student Login/Signup) ---------- */
+function openAuthModal(){ document.getElementById('authModal').classList.add('open'); }
+function closeAuthModal(){ document.getElementById('authModal').classList.remove('open'); clearAuthErrors(); }
+function switchAuthTab(tab){
+  document.getElementById('authTabLogin').classList.toggle('active', tab==='login');
+  document.getElementById('authTabSignup').classList.toggle('active', tab==='signup');
+  document.getElementById('loginForm').classList.toggle('active', tab==='login');
+  document.getElementById('signupForm').classList.toggle('active', tab==='signup');
+  clearAuthErrors();
+}
+function clearAuthErrors(){
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('signupError').textContent = '';
+}
+function togglePw(id, btn){
+  const input = document.getElementById(id);
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  btn.textContent = showing ? 'दिखाएं' : 'छुपाएं';
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  if(!email || !password){ errEl.textContent = 'Email aur Password dono bharein।'; return; }
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if(error){ errEl.textContent = error.message; return; }
+  closeAuthModal();
+  showToast('Login safal ✓');
+  await refreshAuthUI();
+});
+
+document.getElementById('signupForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const full_name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const phone = document.getElementById('signup-phone').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const passwordConfirm = document.getElementById('signup-password-confirm').value;
+  const exam_category = document.getElementById('signup-category').value;
+  const errEl = document.getElementById('signupError');
+  errEl.textContent = '';
+  if(!full_name || !email || !phone || !password || !passwordConfirm){ errEl.textContent = 'Sabhi fields bharna zaroori hai।'; return; }
+  if(!/^[0-9]{10}$/.test(phone)){ errEl.textContent = 'Mobile Number 10 digit ka hona chahiye।'; return; }
+  if(password.length < 6){ errEl.textContent = 'Password kam se kam 6 characters ka ho।'; return; }
+  if(password !== passwordConfirm){ errEl.textContent = 'Password aur Verify Password match nahi kar rahe।'; return; }
+  const { data, error } = await supabaseClient.auth.signUp({
+    email, password,
+    options: { data: { full_name, phone, exam_category } }
+  });
+  if(error){ errEl.textContent = error.message; return; }
+  if(data.session){
+    closeAuthModal();
+    showToast('Signup safal ✓ — aap login ho gaye hain');
+    await refreshAuthUI();
+  } else {
+    switchAuthTab('login');
+    showToast('Signup ho gaya ✓ — email confirm karke login karein');
+  }
+});
+
+async function refreshAuthUI(){
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  const authArea = document.getElementById('authArea');
+  if(!session){
+    currentUser = null; currentProfile = null;
+    authArea.innerHTML = `<button class="cta-btn" onclick="openAuthModal()">Login</button>`;
+    if(document.getElementById('adminShell').classList.contains('show')) exitAdmin();
+    return;
+  }
+  currentUser = session.user;
+  const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+  currentProfile = profile;
+  const name = (profile && profile.full_name) || currentUser.email;
+  authArea.innerHTML = `
+    <span class="user-chip mono">👤 ${escapeHtml(name)}</span>
+    <button class="cta-btn" onclick="logout()">Logout</button>
+  `;
+}
+
+async function logout(){
+  await supabaseClient.auth.signOut();
+  showToast('Logout ho gaya');
+  await refreshAuthUI();
+}
+
+supabaseClient.auth.onAuthStateChange(() => { refreshAuthUI(); });
+function switchAdminTab(section){
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('admin-'+section).classList.add('active');
+  document.querySelectorAll('.side-nav a[id^="sidelink-"]').forEach(a=>a.classList.remove('active'));
+  document.getElementById('sidelink-'+section).classList.add('active');
+  if(section==='notes') renderNotesTable();
+  if(section==='jobs') renderJobsTable();
+}
+
+/* ---------- home counts ---------- */
+function updateHomeCounts(){
+  const notes = loadNotes(), jobs = loadJobs();
+  document.getElementById('regNotesCount').textContent = String(notes.length).padStart(2,'0');
+  document.getElementById('regJobsCount').textContent = String(jobs.length).padStart(2,'0');
+}
+
+/* ================= NOTES: STUDENT VIEW ================= */
+function setNotesCategory(cat){
+  currentNotesCategory = cat;
+  document.getElementById('catAcademicPub').classList.toggle('active', cat==='academic');
+  document.getElementById('catCompetitivePub').classList.toggle('active', cat==='competitive');
+  renderNotesGridPub();
+}
+function renderNotesGridPub(){
+  const notes = loadNotes();
+  document.getElementById('cntAcademicPub').textContent = '(' + notes.filter(n=>n.category==='academic').length + ')';
+  document.getElementById('cntCompetitivePub').textContent = '(' + notes.filter(n=>n.category==='competitive').length + ')';
+  const filtered = notes.filter(n=>n.category===currentNotesCategory);
+  const grid = document.getElementById('notesGridPub');
+  if(filtered.length===0){ grid.innerHTML = '<div class="empty-state">Is category me abhi koi note nahi hai।</div>'; return; }
+  grid.innerHTML = filtered.map(n => `
+    <div class="note-card ${n.accessMode==='only_read'?'mode-only':''}">
+      <div class="tags">
+        <span class="badge ${n.accessMode==='only_read'?'access-only':'access-dl'}">${n.accessMode==='only_read'?'Only Read':'Download & Read'}</span>
+        <span class="badge cat">${n.category==='academic'?'Academic':'Competitive'}${n.examClass? ' · '+escapeHtml(n.examClass) : ''}</span>
+      </div>
+      <h3>${escapeHtml(n.subject)}</h3>
+      <div class="sub">${escapeHtml(n.topic)}</div>
+      <div class="filename">${escapeHtml(n.fileName)}</div>
+      <div class="actions">
+        ${n.accessMode==='only_read'
+          ? `<button class="btn-teal-full" onclick="openReader('${n.id}')">📖 Read Karein</button>`
+          : `<button class="btn-primary-full" onclick="downloadWatermarked('${n.id}')">⬇ Watermarked PDF Download</button>`}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function downloadWatermarked(id){
+  const note = loadNotes().find(n=>n.id===id);
+  if(!note) return;
+  showToast('Watermark लगाया जा रहा है...');
+  try{
+    const bytes = base64ToBytes(note.fileBase64);
+    const { PDFDocument, rgb, degrees, StandardFonts } = PDFLib;
+    const pdfDoc = await PDFDocument.load(bytes);
+    const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    pdfDoc.getPages().forEach(page=>{
+      const { width, height } = page.getSize();
+      for(let gx=0; gx<width; gx+=180){
+        for(let gy=0; gy<height; gy+=140){
+          page.drawText('VIDHYAPATH.COM', { x:gx, y:gy, size:16, font, rotate:degrees(35), opacity:0.16, color:rgb(0.09,0.14,0.25) });
+        }
+      }
+      page.drawText('vidhyapath.com', { x:18, y:14, size:9, font, opacity:0.65, color:rgb(0.09,0.14,0.25) });
+    });
+    const outBytes = await pdfDoc.save();
+    const blob = new Blob([outBytes], {type:'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `vidhyapath_${note.subject}_${note.topic}.pdf`.replace(/\s+/g,'_');
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Download shuru ho gaya ✓ (watermark laga hai)');
+  }catch(err){ console.error(err); showToast('PDF process karne me error aayi', true); }
+}
+
+async function openReader(id){
+  const note = loadNotes().find(n=>n.id===id);
+  if(!note) return;
+  try{
+    const bytes = base64ToBytes(note.fileBase64);
+    const pdf = await pdfjsLib.getDocument({
+      data: bytes,
+      cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+      cMapPacked: true,
+      standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'
+    }).promise;
+    currentReader = { pdf, pageNum: 1, numPages: pdf.numPages };
+    document.getElementById('readerTitle').textContent = note.subject + ' · ' + note.topic;
+    document.getElementById('readerModal').classList.add('open');
+    renderReaderPage();
+  }catch(err){ console.error(err); showToast('PDF khol nahi paaye', true); }
+}
+async function renderReaderPage(){
+  const { pdf, pageNum } = currentReader;
+  const page = await pdf.getPage(pageNum);
+  const canvas = document.getElementById('readerCanvas');
+  const ctx = canvas.getContext('2d');
+  const viewport = page.getViewport({scale: 1.3});
+  canvas.width = viewport.width; canvas.height = viewport.height;
+  await page.render({canvasContext: ctx, viewport}).promise;
+  document.getElementById('readerPageInfo').textContent = `Page ${pageNum} / ${currentReader.numPages}`;
+  document.getElementById('prevPageBtn').disabled = pageNum<=1;
+  document.getElementById('nextPageBtn').disabled = pageNum>=currentReader.numPages;
+}
+document.getElementById('prevPageBtn').addEventListener('click', ()=>{ if(currentReader && currentReader.pageNum>1){ currentReader.pageNum--; renderReaderPage(); } });
+document.getElementById('nextPageBtn').addEventListener('click', ()=>{ if(currentReader && currentReader.pageNum<currentReader.numPages){ currentReader.pageNum++; renderReaderPage(); } });
+document.getElementById('closeReaderBtn').addEventListener('click', ()=>{ document.getElementById('readerModal').classList.remove('open'); currentReader=null; });
+const readerModalEl = document.getElementById('readerModal');
+readerModalEl.addEventListener('contextmenu', e=>e.preventDefault());
+readerModalEl.addEventListener('selectstart', e=>e.preventDefault());
+readerModalEl.addEventListener('dragstart', e=>e.preventDefault());
+document.addEventListener('keydown', (e)=>{ if(!readerModalEl.classList.contains('open')) return; const k=e.key.toLowerCase(); if((e.ctrlKey||e.metaKey) && ['c','s','p','u'].includes(k)){ e.preventDefault(); } });
+
+/* ================= JOBS: STUDENT VIEW ================= */
+const sectionLabels = { latest:'Latest Jobs', results:'Results', admitcard:'Admit Card' };
+const sectionBadgeClass = { latest:'sec-latest', results:'sec-results', admitcard:'sec-admit' };
+const dateLabelsMap = { latest:'Last Date', results:'Result Date', admitcard:'Admit Card Date' };
+
+function setJobsCategory(cat){
+  currentJobsCategory = cat;
+  document.getElementById('catGovPub').classList.toggle('active', cat==='government');
+  document.getElementById('catPvtPub').classList.toggle('active', cat==='private');
+  renderJobsGridPub();
+}
+function setJobsSection(sec){
+  currentJobsSection = sec;
+  document.getElementById('secLatestPub').classList.toggle('active', sec==='latest');
+  document.getElementById('secResultsPub').classList.toggle('active', sec==='results');
+  document.getElementById('secAdmitPub').classList.toggle('active', sec==='admitcard');
+  renderJobsGridPub();
+}
+function renderJobsGridPub(){
+  const jobs = loadJobs();
+  document.getElementById('cntGovPub').textContent = '(' + jobs.filter(j=>j.category==='government').length + ')';
+  document.getElementById('cntPvtPub').textContent = '(' + jobs.filter(j=>j.category==='private').length + ')';
+  const filtered = jobs.filter(j => j.category===currentJobsCategory && j.section===currentJobsSection);
+  const grid = document.getElementById('jobsGridPub');
+  if(filtered.length===0){ grid.innerHTML = `<div class="empty-state">${sectionLabels[currentJobsSection]} me abhi ${currentJobsCategory==='government'?'Government':'Private'} category ka koi update nahi hai।</div>`; return; }
+  grid.innerHTML = filtered.map(j => `
+    <div class="job-card ${j.category==='private'?'pvt-card':''}">
+      <span class="badge ${sectionBadgeClass[j.section]}">${sectionLabels[j.section]}</span>
+      <h3>${escapeHtml(j.title)}</h3>
+      <div class="org">${escapeHtml(j.organization)}</div>
+      ${j.vacancies ? `<div class="meta">Vacancies: <strong>${escapeHtml(j.vacancies)}</strong></div>` : ''}
+      ${j.importantDate ? `<div class="meta">${dateLabelsMap[j.section]}: <strong>${escapeHtml(j.importantDate)}</strong></div>` : ''}
+      ${j.eligibility ? `<div class="meta">Eligibility: ${escapeHtml(j.eligibility)}</div>` : ''}
+      <div class="actions"><a class="btn-apply" href="${escapeHtml(j.officialLink)}" target="_blank" rel="noopener">
+        ${j.section==='latest' ? 'Apply Karein →' : j.section==='results' ? 'Result Dekhein →' : 'Admit Card Download →'}
+      </a></div>
+    </div>
+  `).join('');
+}
+
+/* ================= ADMIN: NOTES ================= */
+function fileToArrayBuffer(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsArrayBuffer(file); }); }
+document.getElementById('note-file').addEventListener('change', (e)=>{
+  const label = document.getElementById('noteFileDropLabel');
+  if(e.target.files[0]){ label.textContent = '✓ ' + e.target.files[0].name; label.classList.add('has-file'); label.classList.remove('error'); }
+});
+document.getElementById('noteUploadForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const subject = document.getElementById('note-subject').value.trim();
+  const topic = document.getElementById('note-topic').value.trim();
+  const category = document.getElementById('note-category').value;
+  const examClass = document.getElementById('note-examclass').value.trim();
+  const accessMode = document.getElementById('note-access').value;
+  const file = document.getElementById('note-file').files[0];
+  const dropLabel = document.getElementById('noteFileDropLabel');
+
+  let hasError = false;
+  toggleError('note-subject', !subject); if(!subject) hasError = true;
+  toggleError('note-topic', !topic); if(!topic) hasError = true;
+  dropLabel.classList.toggle('error', !file); if(!file) hasError = true;
+  if(hasError){ showToast('Subject, Topic aur PDF file bharna zaroori hai', true); return; }
+
+  const buffer = await fileToArrayBuffer(file);
+  const fileBase64 = bytesToBase64(new Uint8Array(buffer));
+  const notes = loadNotes();
+  notes.unshift({ id:'n'+Date.now(), subject, topic, category, examClass, accessMode, fileName:file.name, fileBase64 });
+  saveNotes(notes);
+
+  e.target.reset();
+  dropLabel.textContent = '📄 PDF chunein ya yahan click karein';
+  dropLabel.classList.remove('has-file');
+  renderNotesTable();
+  updateHomeCounts();
+  showToast('Note upload ho gaya ✓ — student page pe live hai');
+});
+function renderNotesTable(){
+  const notes = loadNotes();
+  document.getElementById('noteCount').textContent = notes.length + ' notes';
+  const body = document.getElementById('notesTableBody');
+  if(notes.length===0){ body.innerHTML = '<tr><td colspan="5" class="empty-row">Abhi koi note upload nahi hua।</td></tr>'; return; }
+  body.innerHTML = notes.map(n => `
+    <tr>
+      <td><strong>${escapeHtml(n.subject)}</strong><br><span class="mono" style="color:var(--ink-50); font-size:11.5px;">${escapeHtml(n.topic)}</span></td>
+      <td>${n.category==='academic'?'Academic':'Competitive'}${n.examClass? ' · '+escapeHtml(n.examClass):''}</td>
+      <td><span class="badge ${n.accessMode==='only_read'?'access-only':'access-dl'}">${n.accessMode==='only_read'?'Only Read':'Download & Read'}</span></td>
+      <td class="mono" style="font-size:11.5px;">${escapeHtml(n.fileName)}</td>
+      <td><button class="del-btn" onclick="deleteNote('${n.id}')">Delete</button></td>
+    </tr>`).join('');
+}
+function deleteNote(id){
+  saveNotes(loadNotes().filter(n=>n.id!==id));
+  renderNotesTable(); updateHomeCounts();
+  showToast('Note delete ho gaya');
+}
+
+/* ================= ADMIN: JOBS ================= */
+document.getElementById('job-section').addEventListener('change', (e)=>{
+  document.getElementById('jobDateLabel').innerHTML = dateLabelsMap[e.target.value] + ' <span class="opt">(optional)</span>';
+});
+document.getElementById('jobUploadForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const category = document.getElementById('job-category').value;
+  const section = document.getElementById('job-section').value;
+  const title = document.getElementById('job-title').value.trim();
+  const organization = document.getElementById('job-org').value.trim();
+  const vacancies = document.getElementById('job-vacancies').value.trim();
+  const importantDate = document.getElementById('job-date').value.trim();
+  const eligibility = document.getElementById('job-eligibility').value.trim();
+  const officialLink = document.getElementById('job-link').value.trim();
+
+  let hasError = false;
+  toggleError('job-title', !title); if(!title) hasError = true;
+  toggleError('job-org', !organization); if(!organization) hasError = true;
+  toggleError('job-link', !officialLink); if(!officialLink) hasError = true;
+  if(hasError){ showToast('Title, Organization aur Official Link bharna zaroori hai', true); return; }
+
+  const jobs = loadJobs();
+  jobs.unshift({ id:'j'+Date.now(), category, section, title, organization, vacancies, importantDate, eligibility, officialLink });
+  saveJobs(jobs);
+  e.target.reset();
+  document.getElementById('jobDateLabel').innerHTML = 'Last Date <span class="opt">(optional)</span>';
+  renderJobsTable();
+  updateHomeCounts();
+  showToast('Job entry add ho gayi ✓ — student page pe live hai');
+});
+function renderJobsTable(){
+  const jobs = loadJobs();
+  document.getElementById('jobCount').textContent = jobs.length + ' entries';
+  const body = document.getElementById('jobsTableBody');
+  if(jobs.length===0){ body.innerHTML = '<tr><td colspan="5" class="empty-row">Abhi koi job add nahi hui।</td></tr>'; return; }
+  body.innerHTML = jobs.map(j => `
+    <tr>
+      <td><strong>${escapeHtml(j.title)}</strong><br><span class="mono" style="color:var(--ink-50); font-size:11.5px;">${escapeHtml(j.organization)}</span></td>
+      <td><span class="badge ${j.category==='government'?'gov':'pvt'}">${j.category==='government'?'Government':'Private'}</span></td>
+      <td>${j.section==='latest'?'Latest Jobs':j.section==='results'?'Results':'Admit Card'}</td>
+      <td class="mono" style="font-size:11px; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(j.officialLink)}</td>
+      <td><button class="del-btn" onclick="deleteJob('${j.id}')">Delete</button></td>
+    </tr>`).join('');
+}
+function deleteJob(id){
+  saveJobs(loadJobs().filter(j=>j.id!==id));
+  renderJobsTable(); updateHomeCounts();
+  showToast('Job entry delete ho gayi');
+}
+
+/* ---------- init ---------- */
+updateHomeCounts();
+renderNotesGridPub();
+renderJobsGridPub();
+refreshAuthUI();
+</script>
+
+</body>
+</html>
